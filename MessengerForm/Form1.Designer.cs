@@ -29,45 +29,52 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            this.Send = new System.Windows.Forms.Button();
+            this.Messages = new System.Windows.Forms.ListBox();
+            this.textBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
-            // button1
+            // Send
             // 
-            this.button1.Location = new System.Drawing.Point(12, 340);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.Send.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.Send.Location = new System.Drawing.Point(463, 385);
+            this.Send.Name = "Send";
+            this.Send.Size = new System.Drawing.Size(55, 45);
+            this.Send.TabIndex = 0;
+            this.Send.Text = "Send";
+            this.Send.UseVisualStyleBackColor = false;
+            this.Send.Click += new System.EventHandler(this.button1_Click);
             // 
-            // listBox1
+            // Messages
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(12, 12);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(290, 238);
-            this.listBox1.TabIndex = 1;
+            this.Messages.BackColor = System.Drawing.SystemColors.InactiveCaption;
+            this.Messages.FormattingEnabled = true;
+            this.Messages.Location = new System.Drawing.Point(27, 12);
+            this.Messages.Name = "Messages";
+            this.Messages.Size = new System.Drawing.Size(491, 251);
+            this.Messages.TabIndex = 1;
+            this.Messages.SelectedIndexChanged += new System.EventHandler(this.Messages_SelectedIndexChanged);
             // 
-            // textBox1
+            // textBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(12, 279);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(290, 45);
-            this.textBox1.TabIndex = 2;
+            this.textBox.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.textBox.Location = new System.Drawing.Point(27, 385);
+            this.textBox.Multiline = true;
+            this.textBox.Name = "textBox";
+            this.textBox.Size = new System.Drawing.Size(430, 45);
+            this.textBox.TabIndex = 2;
+            this.textBox.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackgroundImage = ((System.Drawing.Image) (resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.listBox1);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.textBox);
+            this.Controls.Add(this.Messages);
+            this.Controls.Add(this.Send);
             this.Name = "Form1";
             this.Text = "Pipe";
             this.Load += new System.EventHandler(this.Pipe_Load);
@@ -75,10 +82,10 @@
             this.PerformLayout();
         }
 
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button Send;
+        private System.Windows.Forms.ListBox Messages;
 
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.TextBox textBox;
 
         #endregion
     }
