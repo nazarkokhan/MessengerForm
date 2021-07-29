@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Borsa.DTO.Authorization;
+using MessengerApp.Core.DTO.Authorization;
+using MessengerForm.DTO.Authorization;
 
-namespace Borsa.Services.Abstract
+namespace MessengerForm.Services.Abstraction
 {
     public interface ITokenStorage
     {

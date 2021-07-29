@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using MessengerApp.Core.DTO;
+using MessengerApp.Core.DTO.Authorization;
 using MessengerApp.Core.DTO.User;
 using MessengerForm.DTO;
 using MessengerForm.DTO.Authorization;
@@ -55,7 +57,7 @@ namespace MessengerForm.Services
             );
         }
 
-        public async Task<Token> GetAccessTokenAsync(
+        public async Task<TokenDto> GetAccessAndRefreshTokensAsync(
             LogInUserDto userInput)
         {
             var urn = $"account";
@@ -67,7 +69,24 @@ namespace MessengerForm.Services
 
             var responseString = await response.Content.ReadAsStringAsync();
 
-            return JsonSerializer.Deserialize<Token>(responseString,
+            return JsonSerializer.Deserialize<TokenDto>(responseString,
+                new JsonSerializerOptions {Converters = {new JsonStringEnumConverter()}}
+            );
+        }
+        
+        public async Task<TokenDto> RefreshAccessToken(
+            RefreshTokenDto refreshTokenDto)
+        {
+            var urn = $"account";
+
+            var response =
+                await _httpClient.GetAsync(urn);
+
+            response.EnsureSuccessStatusCode();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            return JsonSerializer.Deserialize<TokenDto>(responseString,
                 new JsonSerializerOptions {Converters = {new JsonStringEnumConverter()}}
             );
         }

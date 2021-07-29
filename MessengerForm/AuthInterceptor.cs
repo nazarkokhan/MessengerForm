@@ -3,15 +3,18 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Borsa.Services.Abstract;
+using MessengerApp.Core.DTO.Authorization;
+using MessengerForm.Extensions;
 using MessengerForm.Services.Abstraction;
 
-namespace Borsa
+namespace MessengerForm
 {
     public class AuthInterceptor : DelegatingHandler
     {
         private readonly IAccountService _accountService;
+        
         private readonly ITokenStorage _jsonFileTokenStorage;
+        
         private static readonly SemaphoreSlim SemaphoreSlim = new(1);
 
         public AuthInterceptor(IAccountService accountService, ITokenStorage jsonFileTokenStorage)
@@ -32,7 +35,7 @@ namespace Borsa
                 if (token.IsExpired())
                 {
                     token = await _accountService
-                        .RefreshTokenAsync(new RefreshTokenDto(token.RefreshToken));
+                        .RefreshAccessToken(new RefreshTokenDto(token.Token));
 
                     await _jsonFileTokenStorage.SaveToken(token);
                 }
@@ -44,7 +47,7 @@ namespace Borsa
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     token = await _accountService
-                        .RefreshTokenAsync(new RefreshTokenDto(token.RefreshToken));
+                        .RefreshAccessToken(new RefreshTokenDto(token.Token));
 
                     await _jsonFileTokenStorage.SaveToken(token);
 

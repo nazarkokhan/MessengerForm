@@ -2,25 +2,24 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Borsa.DTO.Authorization;
-using Borsa.Services.Abstract;
 using MessengerForm.DTO.Authorization;
+using MessengerForm.Services.Abstraction;
 
-namespace Borsa.Services
+namespace MessengerForm.Services
 {
     public class JsonFileTokenStorage : ITokenStorage
     {
         private const string FileName = "tokenStorage.json";
 
         private readonly string _path;
-        private Token _tokenDto;
+        private TokenDto _tokenDto;
 
         public JsonFileTokenStorage()
         {
             _path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
         }
 
-        public async Task<Token> GetToken()
+        public async Task<TokenDto> GetToken()
         {
             if (_tokenDto is not null)
             {
@@ -29,12 +28,12 @@ namespace Borsa.Services
 
             if (File.Exists(_path))
             {
-                return _tokenDto = JsonSerializer.Deserialize<Token>(
+                return _tokenDto = JsonSerializer.Deserialize<TokenDto>(
                     await File.ReadAllTextAsync(_path)
                 );
             }
 
-            await SaveToken(new Token(
+            await SaveToken(new TokenDto(
                 "DEFAULT_TOKEN",
                 DateTime.UnixEpoch,
                 "DEFAULT_REFRESH_TOKEN",
@@ -44,7 +43,7 @@ namespace Borsa.Services
             return _tokenDto;
         }
 
-        public async Task SaveToken(Token tokenDto)
+        public async Task SaveToken(TokenDto tokenDto)
         {
             await File.WriteAllTextAsync(_path, JsonSerializer.Serialize(tokenDto));
             _tokenDto = tokenDto;

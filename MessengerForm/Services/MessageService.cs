@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using MessengerApp.Core.DTO;
 using MessengerApp.Core.DTO.Message;
 using MessengerForm.DTO;
 using MessengerForm.DTO.Message;

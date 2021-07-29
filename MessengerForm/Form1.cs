@@ -1,11 +1,20 @@
 ﻿using System;
+using System.Configuration;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MessengerApp.Core.DTO.Message;
+using MessengerForm.Constants;
+using MessengerForm.DTO.Authorization;
+using MessengerForm.DTO.User;
+using MessengerForm.Extensions;
 using MessengerForm.Services;
 using MessengerForm.Services.Abstraction;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualBasic.ApplicationServices;
 
 #pragma warning disable 4014
 
@@ -13,64 +22,94 @@ namespace MessengerForm
 {
     public partial class Form1 : Form
     {
-        private ServiceProvider _service;
+        private static IConfiguration Configuration { get; set; }
         
-        static HubConnection HubConnection { get; set; }
+        private static HubConnection HubConnection { get; set; }
+
+        private readonly IAccountService _accountService;
+        
+        private readonly IChatService _chatService;
+        
+        private readonly IContactService _contactService;
+        
+        private readonly IMessageService _messageService;
+        
+        private readonly ITokenStorage _tokenStorage;
+        
+        private ProfileDto _user;
 
         public Form1()
         {
-            _service = new ServiceCollection()
+            Configuration = new ConfigurationBuilder()
+                .AddJsonFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName.AppSettings))
+                .Build();
+            
+            var serviceProvider = new ServiceCollection()
                 .AddScoped<IAccountService, AccountService>()
                 .AddScoped<IChatService, ChatService>()
                 .AddScoped<IContactService, ContactService>()
                 .AddSingleton<IMessageService, MessageService>()
+                .AddSingleton<ITokenStorage, JsonFileTokenStorage>()
                 .AddScoped<AuthInterceptor>()
-                .AddSingleton<IConfiguration>(configuration)
+                .AddSingleton<IConfiguration>(Configuration)
                 .AddHttpClient(
-                    nameof(LoginService),
-                    client => { client.BaseAddress = new Uri(configuration.GetApiBaseUrl()); }
+                    nameof(AccountService),
+                    client => { client.BaseAddress = new Uri(Configuration.GetApiBaseUrl()); }
                 )
                 .Services
                 .AddHttpClient(
                     Client.AuthClient,
-                    client => { client.BaseAddress = new Uri(configuration.GetApiBaseUrl()); }
+                    client => { client.BaseAddress = new Uri(Configuration.GetApiBaseUrl()); }
                 )
                 .AddHttpMessageHandler<AuthInterceptor>()
                 .Services
                 .BuildServiceProvider();
+            
+            _accountService = serviceProvider.GetRequiredService<IAccountService>();
+            _chatService = serviceProvider.GetRequiredService<IChatService>();
+            _contactService = serviceProvider.GetRequiredService<IContactService>();
+            _messageService = serviceProvider.GetRequiredService<IMessageService>();
+            _tokenStorage = serviceProvider.GetRequiredService<ITokenStorage>();
+            
             InitializeComponent();
         }
 
         private async Task OnHub()
         {
+            Configuration.GetReloadToken();
             HubConnection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:5001/chat")
                 .Build();
         
-            HubConnection.On<MessageDto, string>("SendOth", (messageDto, message) =>
-                // Console.WriteLine($"{messageDto}: {message}")
+            HubConnection.On<MessageDto>("SendOth", (messageDto) =>
                 Messages.Items.Add(messageDto.Body)
             );
         
             await HubConnection.StartAsync();
+        }
         
-            while (true)
+        private async Task LoadMessages()
+        {
+            _user = await _accountService.GetProfileAsync(3);
+
+            var messages = await _messageService.GetMessagesInChatPageAsync(_user.Id, 1);
+
+            foreach (var m in messages.Data)
             {
-                var message = Console.ReadLine();
-        
-                if (message is "end")
-                    break;
-        
-                await HubConnection.SendAsync("SendMessageToOthers", message);
+                Messages.Items.Add(m);
             }
         }
 
         private void Pipe_Load(object sender, EventArgs e)
         {
+            _accountService.GetAccessAndRefreshTokensAsync(Dto.LogInUserData());
+                
             OnHub();
+
+            LoadMessages();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             var newMassage = textBox.Text;
 
@@ -80,16 +119,20 @@ namespace MessengerForm
             }
 
             Messages.Items.Add(newMassage);
+            
+            await HubConnection.SendAsync("SendMessageToOthers", newMassage);
 
             textBox.Text = string.Empty;
         }
 
         private void Messages_SelectedIndexChanged(object sender, EventArgs e)
         {
+            
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
+            
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using MessengerApp.Core.DTO;
+using MessengerApp.Core.DTO.Authorization;
 using MessengerApp.Core.DTO.User;
 using MessengerForm.DTO;
 using MessengerForm.DTO.Authorization;
@@ -15,8 +17,11 @@ namespace MessengerForm.Services.Abstraction
         Task<string> ConfirmRegistrationWithTokenAsync(
             string token, string userId);
         
-        Task<Token> GetAccessTokenAsync(
+        Task<TokenDto> GetAccessAndRefreshTokensAsync(
             LogInUserDto userInput);
+
+        Task<TokenDto> RefreshAccessToken(
+            RefreshTokenDto refreshTokenDto);
 
         Task<ProfileDto> GetProfileAsync(
             int userId);

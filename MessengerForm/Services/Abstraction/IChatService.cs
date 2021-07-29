@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using MessengerApp.Core.DTO;
 using MessengerApp.Core.DTO.Chat;
 using MessengerForm.DTO;
 
@@ -7,10 +8,10 @@ namespace MessengerForm.Services.Abstraction
     public interface IChatService
     {
         Task<Pager<ChatDto>> GetChatsPageAsync(
-            string? search, int page, int items);
+            string search, int page, int items);
         
         Task<Pager<ChatDto>> GetUserChatsPageAsync(
-            int userId, string? search, int page, int items);
+            int userId, string search, int page, int items);
 
         Task<ChatDto> AddUserInChatAsync(
             int userId, AddUserInChatDto addUserInChatDto);
