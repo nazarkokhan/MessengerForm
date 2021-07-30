@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MessengerApp.Core.DTO.Message;
 using MessengerForm.Constants;
 using MessengerForm.DTO.Authorization;
-using MessengerForm.DTO.User;
 using MessengerForm.Extensions;
 using MessengerForm.Services;
 using MessengerForm.Services.Abstraction;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualBasic.ApplicationServices;
 
 #pragma warning disable 4014
 
@@ -54,12 +50,12 @@ namespace MessengerForm
                 .AddSingleton<IConfiguration>(Configuration)
                 .AddHttpClient(
                     nameof(AccountService),
-                    client => { client.BaseAddress = new Uri(Configuration.GetApiBaseUrl()); }
+                    client => { client.BaseAddress = new Uri(Api.BaseUrl); }
                 )
                 .Services
                 .AddHttpClient(
                     Client.AuthClient,
-                    client => { client.BaseAddress = new Uri(Configuration.GetApiBaseUrl()); }
+                    client => { client.BaseAddress = new Uri(Api.BaseUrl); }
                 )
                 .AddHttpMessageHandler<AuthInterceptor>()
                 .Services
@@ -77,11 +73,12 @@ namespace MessengerForm
         private async Task OnHub()
         {
             Configuration.GetReloadToken();
+            
             HubConnection = new HubConnectionBuilder()
                 .WithUrl("https://localhost:5001/chat")
                 .Build();
         
-            HubConnection.On<MessageDto>("SendOth", (messageDto) =>
+            HubConnection.On<MessageDto>("Send", (messageDto) =>
                 Messages.Items.Add(messageDto.Body)
             );
         
@@ -102,8 +99,10 @@ namespace MessengerForm
 
         private void Pipe_Load(object sender, EventArgs e)
         {
-            _accountService.GetAccessAndRefreshTokensAsync(Dto.LogInUserData());
-                
+            var logInUserData = Dto.LogInUserData();
+            
+            var token = _accountService.GetAccessAndRefreshTokensAsync(logInUserData);
+
             OnHub();
 
             LoadMessages();

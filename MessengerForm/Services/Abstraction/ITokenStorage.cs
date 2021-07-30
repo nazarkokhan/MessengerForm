@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using MessengerApp.Core.DTO.Authorization;
 using MessengerForm.DTO.Authorization;
 
 namespace MessengerForm.Services.Abstraction

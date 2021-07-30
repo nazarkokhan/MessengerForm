@@ -3,9 +3,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using MessengerApp.Core.DTO;
 using MessengerApp.Core.DTO.Authorization;
 using MessengerApp.Core.DTO.User;
+using MessengerForm.Constants;
 using MessengerForm.DTO;
 using MessengerForm.DTO.Authorization;
 using MessengerForm.DTO.Authorization.Reset;
@@ -18,9 +18,13 @@ namespace MessengerForm.Services
     {
         private readonly HttpClient _httpClient;
 
-        public AccountService(HttpClient httpClient)
+        private readonly ITokenStorage _jsonFileTokenStorage;
+
+        public AccountService(IHttpClientFactory httpClientFactory, ITokenStorage tokenStorage)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient(nameof(AccountService));
+
+            _jsonFileTokenStorage = tokenStorage;
         }
 
         public async Task CreateUserAndSendEmailTokenAsync(
@@ -58,37 +62,47 @@ namespace MessengerForm.Services
         }
 
         public async Task<TokenDto> GetAccessAndRefreshTokensAsync(
-            LogInUserDto userInput)
+            LogInUserDto logInUserDto)
         {
-            var urn = $"account";
+            var json = JsonSerializer.Serialize(logInUserDto);
 
-            var response =
-                await _httpClient.GetAsync(urn);
+            var response = await _httpClient
+                .PostAsync(
+                    "account/login",
+                    new StringContent(json, Encoding.UTF8, FileName.JsonType)
+                );
 
             response.EnsureSuccessStatusCode();
 
-            var responseString = await response.Content.ReadAsStringAsync();
+            var responseToken = JsonSerializer
+                .Deserialize<TokenDto>(
+                    await response.Content.ReadAsStringAsync()
+                );
+            
+            await _jsonFileTokenStorage.SaveToken(responseToken);
 
-            return JsonSerializer.Deserialize<TokenDto>(responseString,
-                new JsonSerializerOptions {Converters = {new JsonStringEnumConverter()}}
-            );
+            return responseToken;
         }
         
         public async Task<TokenDto> RefreshAccessToken(
             RefreshTokenDto refreshTokenDto)
         {
-            var urn = $"account";
+            var json = JsonSerializer.Serialize(refreshTokenDto);
 
-            var response =
-                await _httpClient.GetAsync(urn);
+            var response = await _httpClient
+                .PutAsync(
+                    "account/refresh-token",
+                    new StringContent(json, Encoding.UTF8, FileName.JsonType)
+                );
 
             response.EnsureSuccessStatusCode();
 
-            var responseString = await response.Content.ReadAsStringAsync();
+            var responseToken = JsonSerializer
+                .Deserialize<TokenDto>(
+                    await response.Content.ReadAsStringAsync()
+                );
 
-            return JsonSerializer.Deserialize<TokenDto>(responseString,
-                new JsonSerializerOptions {Converters = {new JsonStringEnumConverter()}}
-            );
+            return responseToken;
         }
 
         public async Task<ProfileDto> GetProfileAsync(
@@ -112,13 +126,11 @@ namespace MessengerForm.Services
             int id, EditUserDto editUserDto
         )
         {
-            var urn = $"account/{id}";
-
             var json = JsonSerializer.Serialize(editUserDto);
 
             var response = await _httpClient
                 .PutAsync(
-                    urn,
+                    $"account/{id}",
                     new StringContent(json, Encoding.UTF8, "application/json")
                 );
 
@@ -134,13 +146,11 @@ namespace MessengerForm.Services
         public async Task SendEmailResetTokenAsync(
             int userId, ResetEmailDto resetEmailDto)
         {
-            var urn = $"account/{userId}";
-
             var json = JsonSerializer.Serialize(resetEmailDto);
 
             var response = await _httpClient
                 .PutAsync(
-                    urn,
+                    $"account/{userId}",
                     new StringContent(json, Encoding.UTF8, "application/json")
                 );
 

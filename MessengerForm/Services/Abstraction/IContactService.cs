@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using MessengerApp.Core.DTO;
 using MessengerApp.Core.DTO.Contact;
 using MessengerForm.DTO;
 

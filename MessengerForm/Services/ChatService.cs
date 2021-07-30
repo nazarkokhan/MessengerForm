@@ -3,8 +3,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using MessengerApp.Core.DTO;
 using MessengerApp.Core.DTO.Chat;
+using MessengerForm.Constants;
 using MessengerForm.DTO;
 using MessengerForm.Services.Abstraction;
 
@@ -14,9 +14,9 @@ namespace MessengerForm.Services
     {
         private readonly HttpClient _httpClient;
 
-        public ChatService(HttpClient httpClient)
+        public ChatService(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient(Client.AuthClient);
         }
 
         public async Task<Pager<ChatDto>> GetChatsPageAsync(

@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using MessengerApp.Core.DTO;
 using MessengerApp.Core.DTO.Authorization;
 using MessengerApp.Core.DTO.User;
 using MessengerForm.DTO;

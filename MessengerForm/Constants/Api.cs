@@ -2,6 +2,6 @@
 {
     public static class Api
     {
-        public const string BaseUrl = "https://borsa.levent.io";
+        public const string BaseUrl = "https://localhost:5001/api";
     }
 }
